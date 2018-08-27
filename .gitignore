@@ -1,5 +1,4 @@
 node_modules/
-build/
 example/
 coverage
 test/coverage
