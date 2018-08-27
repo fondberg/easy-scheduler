@@ -9,7 +9,7 @@ export const withGoogleApi = (Component) => {
   return props => {
     return (
       <GoogleApiContext.Consumer>
-        {context => <Component {...props} gapi={context.gapi} gapiOptions={context.gapiOptions} />}
+        {context => <Component {...props} gapi={context.gapi} calendarId={context.calendarId}/>}
       </GoogleApiContext.Consumer>
     );
   }
@@ -23,6 +23,5 @@ export const GoogleApiOptions = {
   DISCOVERY_DOCS: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
   // Authorization scopes required by the API; multiple scopes can be
   // included, separated by spaces.
-  SCOPES: 'https://www.googleapis.com/auth/calendar',
-  CALENDAR_ID: 'p7juu3a0ps4tnjdn8c5ao0lb44@group.calendar.google.com'
+  SCOPES: 'https://www.googleapis.com/auth/calendar'
 };

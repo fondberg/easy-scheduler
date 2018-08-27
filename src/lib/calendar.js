@@ -55,8 +55,8 @@ export const deleteEvent = (gapi, calendarId, eventId) => {
 }
 
 export const getEventsForMonth = (gapi, calendarId, monthDate) => {
-  const startDate = moment(monthDate).startOf('month');
-  const endDate = moment(monthDate).endOf('month');
+  const startDate = moment(monthDate).add(1, 'days').startOf('month');
+  const endDate = moment(monthDate).add(1, 'days').endOf('month');
 
   const listOptions = {
     'calendarId': calendarId,
@@ -68,6 +68,7 @@ export const getEventsForMonth = (gapi, calendarId, monthDate) => {
     'orderBy': 'startTime'
   };
 
+  console.log('getEventsForMonth:', startDate.toISOString() + ' till ', endDate.toISOString());
   return gapi.client.calendar.events.list(listOptions);
 }
 

@@ -1,32 +1,23 @@
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
+
 import moment from 'moment-timezone';
-import Helmet from 'react-helmet';
+import 'moment/locale/sv';
+
 import DayPicker, { DateUtils } from 'react-day-picker';
-import 'react-day-picker/lib/style.css';
+import MomentLocaleUtils from 'react-day-picker/moment';
+
+import './daypicker-style.css';
 
 import { deleteEvents, insertPasses, getEventsForMonth } from '../lib/calendar';
 import { withGoogleApi } from '../GoogleApiContext';
 
-const modifiersStyles = {
-  daypasses: {
-    color: 'white',
-    backgroundColor: '#ffc107',
-  },
-  eveningpasses: {
-    color: 'white',
-    backgroundColor: '#d66900',
-  }
-};
-
 
 class DatePicker extends Component {
-  /*
-  * Proptypes:
-  * events
-  * gapi
-  * gapiOptions
-  *
-  * */
+  static propTypes = {
+    gapi: PropTypes.object.isRequired,
+    calendarId: PropTypes.string.isRequired
+  };
 
   constructor(props) {
     super(props);
@@ -73,7 +64,7 @@ class DatePicker extends Component {
     const passesToAdd = this.removeDaysFromArray(this.state.selectedDays,
       dayPass ? this.state.daypasses : this.state.eveningpasses);
 
-    insertPasses(this.props.gapi, this.props.gapiOptions.CALENDAR_ID, dayPass, passesToAdd)
+    insertPasses(this.props.gapi, this.props.calendarId, dayPass, passesToAdd)
       .then(res => this.fetchPassesFromServer());
 
     if (dayPass) {
@@ -98,7 +89,7 @@ class DatePicker extends Component {
       }
     });
 
-    deleteEvents(this.props.gapi, this.props.gapiOptions.CALENDAR_ID, eventIdsToDelete)
+    deleteEvents(this.props.gapi, this.props.calendarId, eventIdsToDelete)
       .then(res => this.fetchPassesFromServer());
 
     const daypasses = this.removeDaysFromArray(this.state.daypasses, selectedDays);
@@ -108,19 +99,29 @@ class DatePicker extends Component {
 
   }
 
-  handleMonthChange = (monthdate) => {
-    console.log('handleMonthChange:', monthdate);
+  handleMonthChange = (newmonth) => {
+    this.fetchPassesFromServer(newmonth);
   }
 
   componentWillMount() {
-    // getCalendars(this.props.gapi).then(res => console.log(res));
     this.fetchPassesFromServer();
   }
 
-  fetchPassesFromServer = () => {
-    getEventsForMonth(this.props.gapi, this.props.gapiOptions.CALENDAR_ID, this.state.monthDate)
+  fetchPassesFromServer = (monthToFetch) => {
+
+    // TODO: refactor
+    if (!monthToFetch) {
+      monthToFetch = this.state.currentMonth;
+    }
+
+    if (monthToFetch.getMonth() !==  this.state.currentMonth.getMonth()) {
+      this.setState({ currentMonth: monthToFetch });
+    }
+
+    getEventsForMonth(this.props.gapi, this.props.calendarId, monthToFetch)
       .then(response => {
-        const events = response.result.items.filter(event => event.summary.includes('Ming jobbar'));
+        // TODO: summary can be undef
+        const events = response.result.items.filter(event => event.summary && event.summary.includes('Ming jobbar'));
         const daypasses = events
           .filter(event => moment(event.start.dateTime).hour() < 8)
           .map(event => moment(event.start.dateTime).toDate());
@@ -132,11 +133,10 @@ class DatePicker extends Component {
   }
 
   render() {
-    const { daypasses, eveningpasses, selectedDays } = this.state;
+    const { currentMonth, daypasses, eveningpasses, selectedDays } = this.state;
 
     return (
       <Fragment>
-        <DatePickerStyles />
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -144,7 +144,9 @@ class DatePicker extends Component {
         }}>
           <DayPicker
             showWeekNumbers
-            firstDayOfWeek={1}
+            localeUtils={MomentLocaleUtils}
+            locale="sv"
+            month={currentMonth}
             className="SchemaChooser"
             onDayClick={this.handleDayClick}
             onMonthChange={this.handleMonthChange}
@@ -152,9 +154,9 @@ class DatePicker extends Component {
             modifiers={ {daypasses, eveningpasses} }
           />
           <div>
-            <button style={modifiersStyles.daypasses} disabled={!selectedDays.length} onClick={this.addPasses(true)}>Dagpass</button>
-            <button style={modifiersStyles.eveningpasses} disabled={!selectedDays.length} onClick={this.addPasses(false)}>Kvällspass</button>
-            <button disabled={!selectedDays.length} onClick={this.clearDay}>Rensa</button>
+            <button className="passButton daypassButton" disabled={!selectedDays.length} onClick={this.addPasses(true)}>Dagpass</button>
+            <button className="passButton eveningpassButton"  disabled={!selectedDays.length} onClick={this.addPasses(false)}>Kvällspass</button>
+            <button className="passButton removepassButton" disabled={!selectedDays.length} onClick={this.clearDay}>Rensa</button>
           </div>
         </div>
       </Fragment>
@@ -163,30 +165,4 @@ class DatePicker extends Component {
 }
 
 export default withGoogleApi(DatePicker);
-
-const DatePickerStyles = (props) => (
-  <Helmet>
-    <style>{`
-  .SchemaChooser .DayPicker-Day--selected {
-    background-color: #4a90e2 !important;
-    color: #4a90e2;
-  }
-
-  .SchemaChooser .DayPicker-Day--eveningpasses:not(.DayPicker-Day--selected) {
-      color: white !important;
-      background-color: #d66900 !important;
-  }
-
-  .SchemaChooser .DayPicker-Day--daypasses:not(.DayPicker-Day--selected) {
-      color: white !important;
-      background-color: #ffc107 !important;
-  }
-
-  .SchemaChooser .DayPicker-Day {
-
-  }
-
-`}</style>
-  </Helmet>
-);
 
