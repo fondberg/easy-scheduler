@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
+import { Helmet } from 'react-helmet';
 
 import moment from 'moment-timezone';
 import 'moment/locale/sv';
@@ -12,6 +13,29 @@ import './daypicker-style.css';
 import { deleteEvents, insertPasses, getEventsForMonth } from '../lib/calendar';
 import { withGoogleApi } from '../GoogleApiContext';
 
+class DatePickerStyles extends Component {
+  render() {
+    return (
+      <Fragment>
+        <Helmet>
+          <style type="text/css">{`
+  .SchemaChooser .DayPicker-Day--eveningpasses:not(.DayPicker-Day--selected) {
+    color: white !important;
+    background-color: #d66900 !important;
+  }
+
+  .SchemaChooser .DayPicker-Day--daypasses:not(.DayPicker-Day--selected) {
+    color: white !important;
+    background-color: #ffc107 !important;
+  }
+        `}</style>
+        </Helmet>
+        <button className="passButton daypassButton" disabled={!selectedDays.length} onClick={this.addPasses(true)}>Dagpass</button>
+        <button className="passButton eveningpassButton"  disabled={!selectedDays.length} onClick={this.addPasses(false)}>Kvällspass</button>
+      </Fragment>
+    );
+  }
+}
 
 class DatePicker extends Component {
   static propTypes = {
@@ -154,8 +178,7 @@ class DatePicker extends Component {
             modifiers={ {daypasses, eveningpasses} }
           />
           <div>
-            <button className="passButton daypassButton" disabled={!selectedDays.length} onClick={this.addPasses(true)}>Dagpass</button>
-            <button className="passButton eveningpassButton"  disabled={!selectedDays.length} onClick={this.addPasses(false)}>Kvällspass</button>
+            <DatePickerStyles />
             <button className="passButton removepassButton" disabled={!selectedDays.length} onClick={this.clearDay}>Rensa</button>
           </div>
         </div>

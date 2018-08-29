@@ -4,7 +4,7 @@ import Calendars from './components/Calendars';
 import { getCalendars } from './lib/calendar';
 import DatePicker from './components/DatePicker';
 
-class App extends Component {
+class EasyScheduler extends Component {
   constructor(props) {
     super(props);
 
@@ -110,10 +110,10 @@ class App extends Component {
     }
 
     return (
-      <Fragment>
+      <div>
         <button onClick={this.signIn} disabled={signedIn}>Logga in</button>
         <button onClick={this.signOut} disabled={!signedIn}>Logga ut</button>
-        <button onClick={this.resetCalendarChoice} disabled={!calendarId}>Välj kalender</button>
+        <button onClick={this.resetCalendarChoice} disabled={!signedIn || !calendarId}>Välj kalender</button>
 
         {!signedIn
           ? <div>Not signed in.</div>
@@ -124,11 +124,11 @@ class App extends Component {
               }
             </GoogleApiContext.Provider>
         }
-      </Fragment>
+      </div>
     );
   }
 }
 
-export default App;
+export default EasyScheduler;
 
 

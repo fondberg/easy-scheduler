@@ -3,83 +3,70 @@ import 'onsenui/css/onsenui.css';
 import 'onsenui/css/onsen-css-components.css';
 import {
   Page,
-  Splitter,
-  SplitterSide,
-  SplitterContent,
-  Toolbar,
-  ToolbarButton,
-  BackButton,
-  Icon,
-  List,
-  ListItem,
-  ListHeader
+  Tab,
+  Tabbar,
+  Toolbar
 } from 'react-onsenui';
 
-export default class SideMenu extends React.Component {
-  constructor(props) {
-    super(props);
+import EasyScheduler from './EasyScheduler';
 
-    this.state = {
-      isOpen: false
-    };
+class MyTab extends React.Component {
+  render() {
+    return (
+      <Page>
+        <section style={{margin: '16px'}}>
+          {this.props.children}.
+        </section>
+      </Page>
+    );
   }
+}
 
-  hide() {
-    this.setState({
-      isOpen: false
-    });
-  }
 
-  show() {
-    this.setState({
-      isOpen: true
-    });
-  }
 
-  renderToolbar() {
+export default class AppTabs extends React.Component {
+  state = {
+    index: 0
+  };
+
+  renderToolbar = () => {
+    const titles = ['Schedule', 'Settings'];
     return (
       <Toolbar>
-        <div className='left'>
-          <ToolbarButton onClick={this.show.bind(this)}>
-            <Icon icon='ion-navicon, material:md-menu' />
-          </ToolbarButton>
-        </div>
-        <div className='center'>
-          Easy scheduler
-        </div>
+        <div className='center'>{titles[this.state.index]}</div>
       </Toolbar>
     );
   }
 
+  renderTabs = () => {
+    return [
+      {
+        content: <MyTab key="Schedule-c"><EasyScheduler /></MyTab> ,
+        tab: <Tab key="Schedule-t" label='Schedule' icon='md-calendar' />
+      },
+      {
+        content: <MyTab key="Settings-c"><span>Settings here</span></MyTab>,
+        tab: <Tab key="Settings-t" label='Settings' icon='md-settings' />
+      }
+    ];
+  }
+
   render() {
     return (
-      <Page>
-        <Splitter>
-          <SplitterSide
-            side='left'
-            isOpen={this.state.isOpen}
-            onClose={this.hide.bind(this)}
-            onOpen={this.show.bind(this)}
-            collapse={true}
-            width={240}
-            swipeable={true}>
-            <Page>
-              <List
-                dataSource={[1, 2, 3, 4]}
-                renderHeader={() => <ListHeader>Menu</ListHeader>}
-                renderRow={(i) => <ListItem key={`menu-item-${i}`} modifier='longdivider' tappable>{'Menu item ' + i}</ListItem>}
-              />
-            </Page>
-          </SplitterSide>
-
-          <SplitterContent>
-            <Page renderToolbar={this.renderToolbar.bind(this)}>
-              <p style={{textAlign: 'center'}}>
-                Swipe left to open menu!
-              </p>
-            </Page>
-          </SplitterContent>
-        </Splitter>
+      <Page renderToolbar={this.renderToolbar}
+            contentStyle={{ backgroundColor: 'red' }}>
+        <Tabbar
+          swipeable={false}
+          position='auto'
+          index={this.state.index}
+          onPreChange={(event) => {
+              if (event.index !== this.state.index) {
+                this.setState({index: event.index});
+              }
+            }
+          }
+          renderTabs={this.renderTabs}
+        />
       </Page>
     );
   }

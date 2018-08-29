@@ -1,5 +1,5 @@
 body {
-  background: #ffffee;
+  font-family: "Droid Sans";
   margin: 0;
   padding: 0;
   font-family: sans-serif;
@@ -32,4 +32,18 @@ a.schema-button:active {
     display:block;
     margin:0.4em auto;
   }
+}
+
+.page__background {
+  background-color: #FFF !important;
+}
+
+.toolbar {
+  background-color: #FFF !important;
+  border-bottom: thin solid #CCC !important;
+}
+
+.tabbar {
+  background-color: #FFF !important;
+  border-top: thin solid #CCC !important;
 }
