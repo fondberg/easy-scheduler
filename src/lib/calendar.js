@@ -1,19 +1,109 @@
 import moment from 'moment-timezone';
 
-export const insertPasses = (gapi, calendarId, daypass, dates) => {
-  const insertPromises = dates.map(date => insertPass(gapi, calendarId, daypass, date));
-  return Promise.all(insertPromises);
+// const retryWithBackoff = async (func, delayMs = 10, retries = 3) => {
+//   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+//   let result;
+//   console.log('retryWithBackoff:', typeof func);
+//
+//   for (let i = 1; i <= retries; ++i) {
+//     try {
+//       result = await func();
+//       console.log('Success:', i, delayMs);
+//       break;
+//     } catch (err) {
+//       delayMs = delayMs * 2;
+//       console.log('Failure:', i, delayMs);
+//       if (i == retries) {
+//         console.log('Maxed retries rethrowing error:', err);
+//         throw err;
+//       }
+//       await wait(delayMs);
+//     }
+//   }
+//   return result;
+// }
+
+
+/*
+* Process the input array or functions or promises in parallel, limited by
+* the concurrencyLimit and a pause of delayMs before execution of the funcs/promises
+* */
+function mapLimit(funcsOrPromises, concurrencyLimit, delayMs) {
+  // Store the return values for the funcs or promises in order
+  const results = [];
+
+  // First create the buckets with the promise chains
+  const chunkedFuncs = funcsOrPromises.reduce((promises, item, index) => {
+    const bucket = index % concurrencyLimit;
+    let chain = promises[bucket];
+    if (!chain) {
+      chain = promises[bucket] = Promise.resolve();
+    }
+
+    promises[bucket] = chain.then(_ => new Promise(resolve => {
+      setTimeout(_ => {
+        // Some promises meet the spec but are not instances of Promise
+        if(item instanceof Promise || typeof item.then === 'function') {
+          item.then(promiseRes => {
+            results[index] = promiseRes;
+            resolve();
+          });
+        } else if( typeof item === 'function') {
+          results[index] = item();
+          resolve();
+        } else {
+          throw new Error('Item must be either a Promise or a function');
+        }
+
+      }, delayMs);
+    }));
+    return promises;
+  }, []);
+
+  // Get the inner chains for the buckets
+  const chunkedFuncsMapped = chunkedFuncs.map(chain => chain.then(res => res));
+  // Run the chains in parallel anbd return the aggregated results
+  return Promise.all(chunkedFuncsMapped).then(_ => results);
 }
 
 
-export const insertPass = (gapi, calendarId, daypass, date) => {
-  const start = daypass ? moment(date).hour(7).minute(0) : moment(date).hour(13).minute(0);
-  const end = daypass ? moment(date).hour(15).minute(30) : moment(date).hour(21).minute(30);
+export const insertPasses = (gapi, calendarId, daypass, dates, settings) => {
+  const insertPromises = dates.map(date => insertPass(gapi, calendarId, daypass, date, settings));
+  return mapLimit(insertPromises, 2, 50);
+}
+export const deleteEvents = (gapi, calendarId, eventIds) => {
+  const deletePromises = eventIds.map(eventId => deleteEvent(gapi, calendarId, eventId));
+  return mapLimit(deletePromises, 2, 50);
+}
+
+
+const getHourMinute = (time) => {
+  const splitted = time.split(':');
+  return {
+    hour: parseInt(splitted[0], 10),
+    min:  parseInt(splitted[1], 10)
+  }
+}
+
+export const insertPass = (gapi, calendarId, daypass, date, settings) => {
+  const dayStart = getHourMinute(settings.daypass.start);
+  const dayEnd = getHourMinute(settings.daypass.end);
+  const evStart = getHourMinute(settings.eveningpass.start);
+  const evEnd = getHourMinute(settings.eveningpass.end);
+  // console.log(dayStart, dayEnd, evStart, evEnd);
+
+  const start = daypass
+    ? moment(date).hour(dayStart.hour).minute(dayStart.min)
+    : moment(date).hour(evStart.hour).minute(evStart.min);
+
+  const end = daypass
+    ? moment(date).hour(dayEnd.hour).minute(dayEnd.min)
+    : moment(date).hour(evEnd.hour).minute(evEnd.min);
 
   const event = {
     'summary': 'Ming jobbar',
     'location': 'Huddinge sjukhus',
-    'description': 'Ming jobbar',
+    'description': 'Ming jobbar\n--- Easy Scheduler ---',
     'start': {
       'dateTime': start.toISOString(),
       'timeZone': moment.tz.guess()
@@ -30,8 +120,6 @@ export const insertPass = (gapi, calendarId, daypass, date) => {
     }
   };
 
-  // console.log(`inserting event in ${calendarId} for daypass:${daypass} :`, event);
-
   const request = gapi.client.calendar.events.insert({
     'calendarId': calendarId,
     'resource': event
@@ -40,10 +128,7 @@ export const insertPass = (gapi, calendarId, daypass, date) => {
   return request;
 }
 
-export const deleteEvents = (gapi, calendarId, eventIds) => {
-  const deletePromises = eventIds.map(eventId => deleteEvent(gapi, calendarId, eventId));
-  return Promise.all(deletePromises);
-}
+
 
 export const deleteEvent = (gapi, calendarId, eventId) => {
   const params = {
@@ -68,8 +153,10 @@ export const getEventsForMonth = (gapi, calendarId, monthDate) => {
     'orderBy': 'startTime'
   };
 
-  console.log('getEventsForMonth:', startDate.toISOString() + ' till ', endDate.toISOString());
-  return gapi.client.calendar.events.list(listOptions);
+  return gapi.client.calendar.events.list(listOptions)
+    .then(response => {
+      return response.result.items.filter(event => event.description && event.description.includes('--- Easy Scheduler ---'));
+    })
 }
 
 export const getCalendars = (gapi) => {

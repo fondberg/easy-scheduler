@@ -5,37 +5,26 @@ body {
   font-family: sans-serif;
 }
 
-a.schema-button {
-  display:inline-block;
-  padding:0.5em 3em;
-  border:0.16em solid #000000;
-  margin:0 0.3em 0.3em 0;
-  box-sizing: border-box;
-  text-decoration:none;
-  text-transform:uppercase;
-  font-family:'Roboto',sans-serif;
-  font-weight:400;
-  color: #343434;
-  text-align:center;
-  transition: all 0.15s;
+.logo_big {
+  max-width: 90%;
+  height: auto;
+  vertical-align: middle;
+  border: 0;
 }
-a.schema-button:hover {
-  color:#DDDDDD;
-  border-color:#DDDDDD;
-}
-a.schema-button:active {
-  color:#BBBBBB;
-  border-color:#BBBBBB;
-}
-@media all and (max-width:30em) {
-  a.schema-button{
-    display:block;
-    margin:0.4em auto;
-  }
+
+.button--easyscheduler--outline {
+  background-color: transparent !important;
+  border: 1px solid rgb(101, 201, 126) !important;
+  color: rgb(101, 201, 126) !important;
 }
 
 .page__background {
-  background-color: #FFF !important;
+  background-color: rgb(255, 255, 255) !important;
+}
+
+
+.page__content {
+  text-align: center !important;
 }
 
 .toolbar {
@@ -46,4 +35,19 @@ a.schema-button:active {
 .tabbar {
   background-color: #FFF !important;
   border-top: thin solid #CCC !important;
+}
+
+.text-input--material__label {
+  color: #6d6d72 !important;
+}
+
+.bottom {
+  position:absolute;
+  bottom: 2%;
+  left: 10%;
+  right: 10%;
+}
+
+.bottom > ons-button:first-child {
+  margin-bottom: 10px;
 }

@@ -157,6 +157,7 @@
 .DayPicker-Day--today {
   color: #d0021b;
   font-weight: 700;
+  box-shadow: 1px 1px 7px 0px rgb(0, 0, 0)
 }
 
 .DayPicker-Day--outside {
@@ -227,17 +228,7 @@
   border-radius: 20px;
 }
 
-.daypassButton {
-  color: white;
-  background-color: #ffc107;
-}
-
-.eveningpassButton {
-  color: white;
-  background-color: #d66900;
-}
-
-.removepassButton {
+.removepassesButton {
   color: white;
   background-color: #636363;
 }
@@ -246,5 +237,3 @@
   background-color: #4a90e2 !important;
   color: #4a90e2;
 }
-
-
