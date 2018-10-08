@@ -24,6 +24,7 @@ import moment from 'moment-timezone';
 // }
 
 
+
 /*
 * Process the input array or functions or promises in parallel, limited by
 * the concurrencyLimit and a pause of delayMs before execution of the funcs/promises
@@ -92,6 +93,8 @@ export const insertPass = (gapi, calendarId, daypass, date, settings) => {
   const evEnd = getHourMinute(settings.eveningpass.end);
   // console.log(dayStart, dayEnd, evStart, evEnd);
 
+  console.log('inserPass:', settings);
+
   const start = daypass
     ? moment(date).hour(dayStart.hour).minute(dayStart.min)
     : moment(date).hour(evStart.hour).minute(evStart.min);
@@ -101,9 +104,9 @@ export const insertPass = (gapi, calendarId, daypass, date, settings) => {
     : moment(date).hour(evEnd.hour).minute(evEnd.min);
 
   const event = {
-    'summary': 'Ming jobbar',
+    'summary': settings.eventText,
     'location': 'Huddinge sjukhus',
-    'description': 'Ming jobbar\n--- Easy Scheduler ---',
+    'description': settings.eventText + '\n--- Easy Scheduler ---',
     'start': {
       'dateTime': start.toISOString(),
       'timeZone': moment.tz.guess()

@@ -9,6 +9,8 @@ import {
 
 import { withGoogleApi } from '../GoogleApiContext';
 
+import './settings-style.css';
+
 class Settings extends Component {
   static propTypes = {
     easySchedulerModel: PropTypes.object.isRequired,
@@ -83,41 +85,72 @@ class Settings extends Component {
              )}
           </Select>
         </div>
-        <div style={{ position: 'relative',marginTop: '50px' }}>
+        <div style={{ position: 'relative', marginTop: '50px' }}>
           <span className="text-input__label text-input--material__label--active text-input--material__label">
             Dagpass tider
           </span>
-          <input
-            style={{ width: '45%' }}
-            className="text-input text-input--material"
-            value={this.state.daypass.start}
-            onChange={this.handleEvent('daypass', 'start')}
-            type="time"/>
-          <span>-&nbsp;&nbsp;</span>
-          <input
-            style={{ width: '45%' }}
-            className="text-input text-input--material"
-            value={this.state.daypass.end}
-            onChange={this.handleEvent('daypass', 'end')}
-            type="time"/>
+          <div>
+            <input
+              style={{ width: '45%' }}
+              className="text-input text-input--material"
+              value={this.state.daypass.start}
+              onChange={this.handleEvent('daypass', 'start')}
+              type="time"/>
+            <span>-&nbsp;&nbsp;</span>
+            <input
+              style={{ width: '45%' }}
+              className="text-input text-input--material"
+              value={this.state.daypass.end}
+              onChange={this.handleEvent('daypass', 'end')}
+              type="time"/>
+          </div>
+          <div style={{ position: 'relative', marginTop: '20px' }}>
+            <span className="text-input__label text-input--material__label--active text-input--material__label">
+              Dagpass färg
+            </span>
+            <div>
+              <input
+                type="color"
+                style={{ width: '100%', margin: '0px -5px 0px -5px', height: '30px' }}
+                value={this.state.daypass.color}
+                onChange={this.handleEvent('daypass', 'color')}
+              />
+            </div>
+          </div>
         </div>
+
         <div style={{ position: 'relative',marginTop: '50px' }}>
           <span className="text-input__label text-input--material__label--active text-input--material__label">
             Kvällspass tider
           </span>
-          <input
-            style={{ width: '45%' }}
-            className="text-input text-input--material"
-            value={this.state.eveningpass.start}
-            onChange={this.handleEvent('eveningpass', 'start')}
-            type="time"/>
-          <span>-&nbsp;&nbsp;</span>
-          <input
-            style={{ width: '45%' }}
-            className="text-input text-input--material"
-            value={this.state.eveningpass.end}
-            onChange={this.handleEvent('eveningpass', 'end')}
-            type="time"/>
+          <div>
+            <input
+              style={{ width: '45%' }}
+              className="text-input text-input--material"
+              value={this.state.eveningpass.start}
+              onChange={this.handleEvent('eveningpass', 'start')}
+              type="time"/>
+            <span>-&nbsp;&nbsp;</span>
+            <input
+              style={{ width: '45%' }}
+              className="text-input text-input--material"
+              value={this.state.eveningpass.end}
+              onChange={this.handleEvent('eveningpass', 'end')}
+              type="time"/>
+          </div>
+        </div>
+        <div style={{ position: 'relative',marginTop: '20px' }}>
+          <span className="text-input__label text-input--material__label--active text-input--material__label">
+            Kvällspass färg
+          </span>
+          <div>
+            <input
+              type="color"
+              style={{ width: '100%', margin: '0px -5px 0px -5px', height: '30px'  }}
+              value={this.state.eveningpass.color}
+              onChange={(event) => { this.setState({color: event.target.value})} }
+            />
+          </div>
         </div>
         <Input
           style={{ width: '100%', marginTop: '50px' }}
@@ -126,6 +159,8 @@ class Settings extends Component {
           modifier='material'
           float
           placeholder='Kalenderns händelsetext' />
+
+
 
         <div className="bottom">
           <Button modifier='large'

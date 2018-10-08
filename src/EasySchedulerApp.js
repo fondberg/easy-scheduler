@@ -29,7 +29,7 @@ class MyTab extends React.Component {
   }
 }
 
-class EasyScheduler extends Component {
+class EasySchedulerApp extends Component {
   constructor(props) {
     super(props);
 
@@ -247,6 +247,6 @@ class EasyScheduler extends Component {
 
 }
 
-export default EasyScheduler;
+export default EasySchedulerApp;
 
 

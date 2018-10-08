@@ -42,7 +42,7 @@
 
 .DayPicker-NavButton {
   border: solid #0aa1f9;
-  border-width: 0 3px 3px 0;
+  border-width: 0 6px 6px 0;
   display: inline-block;
   padding: 3px;
 
@@ -51,8 +51,8 @@
   top: 1rem;
   right: 1.5rem;
   margin-top: 2px;
-  width: 0.35rem;
-  height: 0.35rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 
@@ -78,8 +78,9 @@
 }
 
 .DayPicker-Caption > div {
-  font-size: 1.15rem;
+  font-size: 1.5rem;
   font-weight: 500;
+  padding-bottom: 1rem;
 }
 
 .DayPicker-Weekdays {
@@ -157,7 +158,7 @@
 .DayPicker-Day--today {
   color: #d0021b;
   font-weight: 700;
-  box-shadow: 1px 1px 7px 0px rgb(0, 0, 0)
+  nox-shadow: 1px 1px 7px 0px rgb(0, 0, 0)
 }
 
 .DayPicker-Day--outside {
@@ -187,14 +188,6 @@
   background-color: #4a90e2;
 }
 
-.DayPicker-Day--selected:not(.DayPicker-Day--disabled):not(.DayPicker-Day--outside):hover {
-  background-color: #51a0fa;
-}
-
-.DayPicker:not(.DayPicker--interactionDisabled)
-  .DayPicker-Day:not(.DayPicker-Day--disabled):not(.DayPicker-Day--selected):not(.DayPicker-Day--outside):hover {
-  background-color: #f0f8ff;
-}
 
 /* DayPickerInput */
 
@@ -233,7 +226,3 @@
   background-color: #636363;
 }
 
-.SchemaChooser .DayPicker-Day--selected {
-  background-color: #4a90e2 !important;
-  color: #4a90e2;
-}

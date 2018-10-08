@@ -15,16 +15,22 @@ import { withGoogleApi } from '../GoogleApiContext';
 import { AlertDialog, Button, ProgressBar } from 'react-onsenui';
 
 class DatePickerStyles extends Component {
-  render() {
 
+  static propTypes = {
+    daypassColor: PropTypes.string.isRequired,
+    eveningpassColor: PropTypes.string.isRequired
+  };
+
+  render() {
+    const { daypassColor, eveningpassColor } = this.props;
     const passes = [
       {
         name: 'daypasses',
-        color: '#ffc107'
+        color: daypassColor
       },
       {
         name: 'eveningpasses',
-        color: '#d66900'
+        color: eveningpassColor
       }
     ];
 
@@ -224,7 +230,7 @@ class DatePicker extends Component {
             modifiers={ {daypasses, eveningpasses} }
           />
           <div>
-            <DatePickerStyles />
+            <DatePickerStyles daypassColor={this.state.settings.daypass.color} eveningpassColor={this.state.settings.eveningpass.color}/>
             <button className="passButton daypassesButton" disabled={!selectedDays.length} onClick={this.addPasses(true)}>Dagpass</button>
             <button className="passButton eveningpassesButton"  disabled={!selectedDays.length} onClick={this.addPasses(false)}>Kvällspass</button>
             <button className="passButton removepassesButton" disabled={!selectedDays.length} onClick={this.clearDays}>Rensa</button>
