@@ -21,7 +21,7 @@ class MyTab extends React.Component {
   render() {
     return (
       <Page>
-        <section style={{margin: '16px'}}>
+        <section>
           {this.props.children}.
         </section>
       </Page>
@@ -52,7 +52,8 @@ class EasySchedulerApp extends Component {
         end: '21:30',
         color: '#d66900'
       },
-      eventText: 'Ming jobbar'
+      eventText: 'Ming jobbar',
+      address: 'Huddinge sjukhus'
     };
   }
 
@@ -65,7 +66,8 @@ class EasySchedulerApp extends Component {
       calendarId: this.state.calendarId,
       daypass: this.state.daypass,
       eveningpass: this.state.eveningpass,
-      eventText: this.state.eventText
+      eventText: this.state.eventText,
+      address: this.state.address
     }
   }
 

@@ -93,8 +93,6 @@ export const insertPass = (gapi, calendarId, daypass, date, settings) => {
   const evEnd = getHourMinute(settings.eveningpass.end);
   // console.log(dayStart, dayEnd, evStart, evEnd);
 
-  console.log('inserPass:', settings);
-
   const start = daypass
     ? moment(date).hour(dayStart.hour).minute(dayStart.min)
     : moment(date).hour(evStart.hour).minute(evStart.min);
@@ -105,7 +103,7 @@ export const insertPass = (gapi, calendarId, daypass, date, settings) => {
 
   const event = {
     'summary': settings.eventText,
-    'location': 'Huddinge sjukhus',
+    'location': settings.address,
     'description': settings.eventText + '\n--- Easy Scheduler ---',
     'start': {
       'dateTime': start.toISOString(),
@@ -115,9 +113,6 @@ export const insertPass = (gapi, calendarId, daypass, date, settings) => {
       'dateTime': end.toISOString(),
       'timeZone': moment.tz.guess()
     },
-    'attendees': [
-      {'email': 'ming.fondberg@gmail.com'},
-    ],
     'reminders': {
       'useDefault': false
     }
@@ -159,6 +154,31 @@ export const getEventsForMonth = (gapi, calendarId, monthDate) => {
   return gapi.client.calendar.events.list(listOptions)
     .then(response => {
       return response.result.items.filter(event => event.description && event.description.includes('--- Easy Scheduler ---'));
+    })
+}
+
+export const getOtherEventsForMonth = (gapi, calendarId, monthDate) => {
+  const startDate = moment(monthDate).add(1, 'days').startOf('month');
+  const endDate = moment(monthDate).add(1, 'days').endOf('month');
+
+  const listOptions = {
+    'calendarId': calendarId,
+    'timeMin': startDate.toISOString(),
+    'timeMax': endDate.toISOString(),
+    'showDeleted': false,
+    'singleEvents': true,
+    'maxResults': 100,
+    'orderBy': 'startTime'
+  };
+
+  return gapi.client.calendar.events.list(listOptions)
+    .then(response => {
+      return response.result.items.filter(event => {
+        if (event.description && event.description.includes('--- Easy Scheduler ---')) {
+          return false;
+        }
+        return true;
+      });
     })
 }
 

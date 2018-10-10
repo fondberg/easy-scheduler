@@ -5,8 +5,8 @@
   width: 100%
 }
 
-.DayPicker *:focus {
-  outline:0;
+.DayPicker *:not(.DayPicker-Day):focus {
+  outline: 0;
 }
 
 .DayPicker-wrapper {
@@ -216,13 +216,28 @@
   text-decoration: none;
   display: inline-block;
   font-size: 14px;
-  width: 90px;
+  width: 26vw;
   margin: 4px 2px;
   border-radius: 20px;
 }
-
+.passButton:focus {
+  outline: 0;
+}
 .removepassesButton {
   color: white;
   background-color: #636363;
+}
+
+.addPassesButton {
+  width: 80vw;
+  color: white;
+  background-color: rgb(45, 118, 246);
+}
+
+.bottomButtonContainer {
+  position: fixed;
+  bottom: 5px;
+  right: 0;
+  width: 100vw;
 }
 

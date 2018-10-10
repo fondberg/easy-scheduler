@@ -37,17 +37,4 @@ body {
   border-top: thin solid #CCC !important;
 }
 
-.text-input--material__label {
-  color: #6d6d72 !important;
-}
 
-.bottom {
-  position:absolute;
-  bottom: 2%;
-  left: 10%;
-  right: 10%;
-}
-
-.bottom > ons-button:first-child {
-  margin-bottom: 10px;
-}

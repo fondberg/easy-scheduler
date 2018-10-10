@@ -18,6 +18,7 @@ class Settings extends Component {
 
   state = {
     eventText: '',
+    address: '',
     calendarId: '',
     calendars: [],
     daypass: {
@@ -39,6 +40,7 @@ class Settings extends Component {
       {
         calendars: calendars,
         eventText: settings.eventText,
+        address: settings.address,
         calendarId: settings.calendarId || '',
         daypass: { ...settings.daypass },
         eveningpass: { ...settings.eveningpass }
@@ -70,7 +72,7 @@ class Settings extends Component {
 
   render() {
     return (
-      <div style={{ padding: 20, textAlign: 'left' }}>
+      <div style={{ padding: 20, textAlign: 'left', overflow: 'scroll' }}>
         <div style={{ position: 'relative' }}>
           <span className="text-input__label text-input--material__label--active text-input--material__label">
             Välj kalender
@@ -85,7 +87,7 @@ class Settings extends Component {
              )}
           </Select>
         </div>
-        <div style={{ position: 'relative', marginTop: '50px' }}>
+        <div style={{ position: 'relative', marginTop: '45px' }}>
           <span className="text-input__label text-input--material__label--active text-input--material__label">
             Dagpass tider
           </span>
@@ -119,7 +121,7 @@ class Settings extends Component {
           </div>
         </div>
 
-        <div style={{ position: 'relative',marginTop: '50px' }}>
+        <div style={{ position: 'relative', marginTop: '40px' }}>
           <span className="text-input__label text-input--material__label--active text-input--material__label">
             Kvällspass tider
           </span>
@@ -148,7 +150,7 @@ class Settings extends Component {
               type="color"
               style={{ width: '100%', margin: '0px -5px 0px -5px', height: '30px'  }}
               value={this.state.eveningpass.color}
-              onChange={(event) => { this.setState({color: event.target.value})} }
+              onChange={this.handleEvent('daypass', 'color')}
             />
           </div>
         </div>
@@ -158,8 +160,14 @@ class Settings extends Component {
           onChange={(event) => { this.setState({eventText: event.target.value})} }
           modifier='material'
           float
-          placeholder='Kalenderns händelsetext' />
-
+          placeholder='Kalender text' />
+        <Input
+          style={{ width: '100%', marginTop: '30px' }}
+          value={this.state.address}
+          onChange={(event) => { this.setState({address: event.target.value})} }
+          modifier='material'
+          float
+          placeholder='Arbetsadress' />
 
 
         <div className="bottom">

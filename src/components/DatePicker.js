@@ -10,9 +10,10 @@ import MomentLocaleUtils from 'react-day-picker/moment';
 
 import './daypicker-style.css';
 
-import { deleteEvents, insertPasses, getEventsForMonth } from '../lib/calendar';
+import { deleteEvents, insertPasses, getEventsForMonth, getOtherEventsForMonth } from '../lib/calendar';
 import { withGoogleApi } from '../GoogleApiContext';
-import { AlertDialog, Button, ProgressBar } from 'react-onsenui';
+import { AlertDialog, Button, List, ListHeader, ListItem, ProgressBar } from 'react-onsenui';
+
 
 class DatePickerStyles extends Component {
 
@@ -77,7 +78,10 @@ class DatePicker extends Component {
       daypasses: [],
       eveningpasses: [],
       events: [],
-      settings: {}
+      settings: {},
+      addPassMode: false,
+      selectedDay: date,
+      otherEvents: []
     };
   }
 
@@ -93,7 +97,13 @@ class DatePicker extends Component {
 
   // DayPicker functions
   handleDayClick = (day, { selected }) => {
-    const { selectedDays } = this.state;
+
+    const { addPassMode, selectedDays } = this.state;
+    if (!addPassMode) {
+      this.setState({ selectedDays: [], selectedDay: day });
+      return;
+    }
+
     if (selected) {
       const selectedIndex = selectedDays.findIndex(selectedDay =>
         DateUtils.isSameDay(selectedDay, day)
@@ -102,7 +112,7 @@ class DatePicker extends Component {
     } else {
       selectedDays.push(day);
     }
-    this.setState({ selectedDays });
+    this.setState({ selectedDays, selectedDay: day });
   }
 
   // ============================
@@ -202,11 +212,29 @@ class DatePicker extends Component {
           .map(event => moment(event.start.dateTime).toDate());
         this.setState({ loading: false, events, daypasses, eveningpasses, selectedDays: [] });
       });
+
+    getOtherEventsForMonth(this.props.gapi, this.state.settings.calendarId, monthToFetch)
+      .then(events => this.setState({ otherEvents: events }));
   }
 
   render() {
-    const { loading, currentMonth, daypasses, eveningpasses, selectedDays } = this.state;
+    const { loading,
+            currentMonth,
+            daypasses,
+            eveningpasses,
+            selectedDays,
+            otherEvents,
+            addPassMode,
+            selectedDay
+    } = this.state;
 
+    const selectedDaysEvents = otherEvents
+      .filter(event => DateUtils.isSameDay(selectedDay, moment(event.start.dateTime).toDate()))
+      .map(event => {
+        const start = moment(event.start.dateTime).format('HH:mm');
+        const end = moment(event.end.dateTime).format('HH:mm');
+        return start + ' - ' + end + '  ' +  event.summary;
+      });
 
     return (
       <Fragment>
@@ -231,9 +259,35 @@ class DatePicker extends Component {
           />
           <div>
             <DatePickerStyles daypassColor={this.state.settings.daypass.color} eveningpassColor={this.state.settings.eveningpass.color}/>
-            <button className="passButton daypassesButton" disabled={!selectedDays.length} onClick={this.addPasses(true)}>Dagpass</button>
-            <button className="passButton eveningpassesButton"  disabled={!selectedDays.length} onClick={this.addPasses(false)}>Kvällspass</button>
-            <button className="passButton removepassesButton" disabled={!selectedDays.length} onClick={this.clearDays}>Rensa</button>
+            {addPassMode && (
+              <Fragment>
+                <div>
+                  <button className="passButton daypassesButton" disabled={!selectedDays.length} onClick={this.addPasses(true)}>Dagpass</button>
+                  <button className="passButton eveningpassesButton"  disabled={!selectedDays.length} onClick={this.addPasses(false)}>Kvällspass</button>
+                  <button className="passButton removepassesButton" disabled={!selectedDays.length} onClick={this.clearDays}>Rensa</button>
+                </div>
+              </Fragment>
+              )}
+            {!addPassMode && (
+              <Fragment>
+                <div style={{ marginTop: '15px', width: '80vw', height: '27vh', overflow: 'scroll' }}>
+                  <List
+                    dataSource={selectedDaysEvents}
+                    renderRow={(row, index) => {
+                      return (<ListItem key={index}>{row}</ListItem>);
+                    }}
+                    renderHeader={() => <ListHeader modifier="material">DDDD</ListHeader>}
+                  />
+                </div>
+              </Fragment>
+              )}
+          </div>
+
+          <div className="bottomButtonContainer">
+              <button className="passButton addPassesButton"
+                      onClick={() => this.setState({ addPassMode: !addPassMode, selectedDays: [] })}>
+                {addPassMode ? 'Klar' : 'Lägg till pass' }
+                </button>
           </div>
         </div>
 
