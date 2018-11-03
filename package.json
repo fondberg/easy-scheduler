@@ -6,9 +6,10 @@
   "dependencies": {
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.21",
-    "onsenui": "^2.10.4",
+    "onsenui": "^2.10.5",
+    "prettier": "^1.14.3",
     "react": "^16.4.2",
-    "react-day-picker": "^7.2.1",
+    "react-day-picker": "^7.2.4",
     "react-dom": "^16.4.2",
     "react-helmet": "^5.2.0",
     "react-onsenui": "^1.11.1",

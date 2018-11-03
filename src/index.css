@@ -18,10 +18,10 @@ body {
   color: rgb(101, 201, 126) !important;
 }
 
+/* Onsen overrides and fixes */
 .page__background {
   background-color: rgb(255, 255, 255) !important;
 }
-
 
 .page__content {
   text-align: center !important;
@@ -36,5 +36,3 @@ body {
   background-color: #FFF !important;
   border-top: thin solid #CCC !important;
 }
-
-

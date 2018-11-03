@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import {
-  Button, Icon,
-  Input,
-  Select
-} from 'react-onsenui';
+import { Button, Icon, Input, Select } from 'react-onsenui';
 
 import { withGoogleApi } from '../GoogleApiContext';
 
@@ -24,37 +20,34 @@ class Settings extends Component {
     daypass: {
       start: '',
       end: '',
-      color: ''
+      color: '',
     },
     eveningpass: {
       start: '',
       end: '',
-      color: ''
+      color: '',
     },
-  }
+  };
 
   init = () => {
     const calendars = this.props.easySchedulerModel.getCalendars();
     const settings = this.props.easySchedulerModel.getSettings();
-    this.setState(
-      {
-        calendars: calendars,
-        eventText: settings.eventText,
-        address: settings.address,
-        calendarId: settings.calendarId || '',
-        daypass: { ...settings.daypass },
-        eveningpass: { ...settings.eveningpass }
-      }
-    );
-
-  }
+    this.setState({
+      calendars: calendars,
+      eventText: settings.eventText,
+      address: settings.address,
+      calendarId: settings.calendarId || '',
+      daypass: { ...settings.daypass },
+      eveningpass: { ...settings.eveningpass },
+    });
+  };
 
   componentWillMount() {
     this.init();
   }
 
   componentDidUpdate(nextProps) {
-    if(nextProps.active !== this.props.active) {
+    if (nextProps.active !== this.props.active) {
       this.init();
     }
   }
@@ -62,13 +55,13 @@ class Settings extends Component {
   saveSettings = () => {
     const { calendars, ...settings } = this.state;
     this.props.easySchedulerModel.saveSettings(settings);
-  }
+  };
 
-  handleEvent = (stateKey, subKey) => (event) => {
+  handleEvent = (stateKey, subKey) => event => {
     this.setState({
-        [stateKey]: Object.assign({}, this.state[stateKey], {[subKey]: event.target.value})
-      })
-  }
+      [stateKey]: Object.assign({}, this.state[stateKey], { [subKey]: event.target.value }),
+    });
+  };
 
   render() {
     return (
@@ -77,16 +70,22 @@ class Settings extends Component {
           <span className="text-input__label text-input--material__label--active text-input--material__label">
             Välj kalender
           </span>
-          <Select style={{ width: '100%' }}
-                  value={this.state.calendarId}
-                  modifier="material"
-                  onChange={(event) => { this.setState({calendarId: event.target.value}) }}>
-            <option value="" disabled></option>
-             {this.state.calendars.map(calendar =>
-               <option key={calendar.id} value={calendar.id}>{calendar.summary}</option>
-             )}
+          <Select
+            style={{ width: '100%' }}
+            value={this.state.calendarId}
+            modifier="material"
+            onChange={event => {
+              this.setState({ calendarId: event.target.value });
+            }}>
+            <option value="" disabled />
+            {this.state.calendars.map(calendar => (
+              <option key={calendar.id} value={calendar.id}>
+                {calendar.summary}
+              </option>
+            ))}
           </Select>
         </div>
+
         <div style={{ position: 'relative', marginTop: '45px' }}>
           <span className="text-input__label text-input--material__label--active text-input--material__label">
             Dagpass tider
@@ -97,14 +96,16 @@ class Settings extends Component {
               className="text-input text-input--material"
               value={this.state.daypass.start}
               onChange={this.handleEvent('daypass', 'start')}
-              type="time"/>
+              type="time"
+            />
             <span>-&nbsp;&nbsp;</span>
             <input
               style={{ width: '45%' }}
               className="text-input text-input--material"
               value={this.state.daypass.end}
               onChange={this.handleEvent('daypass', 'end')}
-              type="time"/>
+              type="time"
+            />
           </div>
           <div style={{ position: 'relative', marginTop: '20px' }}>
             <span className="text-input__label text-input--material__label--active text-input--material__label">
@@ -131,54 +132,60 @@ class Settings extends Component {
               className="text-input text-input--material"
               value={this.state.eveningpass.start}
               onChange={this.handleEvent('eveningpass', 'start')}
-              type="time"/>
+              type="time"
+            />
             <span>-&nbsp;&nbsp;</span>
             <input
               style={{ width: '45%' }}
               className="text-input text-input--material"
               value={this.state.eveningpass.end}
               onChange={this.handleEvent('eveningpass', 'end')}
-              type="time"/>
+              type="time"
+            />
           </div>
         </div>
-        <div style={{ position: 'relative',marginTop: '20px' }}>
+        <div style={{ position: 'relative', marginTop: '20px' }}>
           <span className="text-input__label text-input--material__label--active text-input--material__label">
             Kvällspass färg
           </span>
           <div>
             <input
               type="color"
-              style={{ width: '100%', margin: '0px -5px 0px -5px', height: '30px'  }}
+              style={{ width: '100%', margin: '0px -5px 0px -5px', height: '30px' }}
               value={this.state.eveningpass.color}
               onChange={this.handleEvent('daypass', 'color')}
             />
           </div>
         </div>
+
         <Input
           style={{ width: '100%', marginTop: '50px' }}
           value={this.state.eventText}
-          onChange={(event) => { this.setState({eventText: event.target.value})} }
-          modifier='material'
+          onChange={event => {
+            this.setState({ eventText: event.target.value });
+          }}
+          modifier="material"
           float
-          placeholder='Kalender text' />
+          placeholder="Kalender text"
+        />
         <Input
           style={{ width: '100%', marginTop: '30px' }}
           value={this.state.address}
-          onChange={(event) => { this.setState({address: event.target.value})} }
-          modifier='material'
+          onChange={event => {
+            this.setState({ address: event.target.value });
+          }}
+          modifier="material"
           float
-          placeholder='Arbetsadress' />
-
+          placeholder="Arbetsadress"
+        />
 
         <div className="bottom">
-          <Button modifier='large'
-                  onClick={this.saveSettings}>
+          <Button modifier="large" onClick={this.saveSettings}>
             Spara inställningar <Icon icon="md-edit" />
           </Button>
 
-          <Button modifier='large--quiet'
-                  onClick={this.props.easySchedulerModel.signOut}>
-            Logga ut <Icon icon='md-sign-in' />
+          <Button modifier="large--quiet" onClick={this.props.easySchedulerModel.signOut}>
+            Logga ut <Icon icon="md-sign-in" />
           </Button>
         </div>
       </div>

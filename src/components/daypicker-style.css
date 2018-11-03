@@ -241,3 +241,12 @@
   width: 100vw;
 }
 
+.ons-list-item-fixed {
+  margin-bottom: 5px;
+}
+
+.list-header--material {
+  padding-left: 0 !important;
+  font-size: 16px !important;
+}
+

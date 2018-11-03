@@ -1,69 +1,22 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { Helmet } from 'react-helmet';
 
 import moment from 'moment-timezone';
 import 'moment/locale/sv';
 
 import DayPicker, { DateUtils } from 'react-day-picker';
 import MomentLocaleUtils from 'react-day-picker/moment';
-
-import './daypicker-style.css';
+import { AlertDialog, Button, List, ListHeader, ProgressBar } from 'react-onsenui';
 
 import { deleteEvents, insertPasses, getEventsForMonth, getOtherEventsForMonth } from '../lib/calendar';
 import { withGoogleApi } from '../GoogleApiContext';
-import { AlertDialog, Button, List, ListHeader, ListItem, ProgressBar } from 'react-onsenui';
-
-
-class DatePickerStyles extends Component {
-
-  static propTypes = {
-    daypassColor: PropTypes.string.isRequired,
-    eveningpassColor: PropTypes.string.isRequired
-  };
-
-  render() {
-    const { daypassColor, eveningpassColor } = this.props;
-    const passes = [
-      {
-        name: 'daypasses',
-        color: daypassColor
-      },
-      {
-        name: 'eveningpasses',
-        color: eveningpassColor
-      }
-    ];
-
-    const styles = passes.map(pass => {
-      return `
-.SchemaChooser .DayPicker-Day--${pass.name}:not(.DayPicker-Day--selected) {
-  color: white !important;
-  background-color: ${pass.color} !important;
-}
-.${pass.name}Button {
-  color: white;
-  background-color: ${pass.color};
-}
-  `;
-    }).join('\n');
-
-    return (
-      <Fragment>
-        <Helmet>
-          <style type="text/css">
-            {styles}
-            </style>
-        </Helmet>
-      </Fragment>
-    );
-  }
-}
+import DatePickerStyles from './DatePickerStyles';
+import './daypicker-style.css';
 
 class DatePicker extends Component {
   static propTypes = {
     gapi: PropTypes.object.isRequired,
-    easySchedulerModel: PropTypes.object.isRequired
+    easySchedulerModel: PropTypes.object.isRequired,
   };
 
   constructor(props) {
@@ -81,23 +34,67 @@ class DatePicker extends Component {
       settings: {},
       addPassMode: false,
       selectedDay: date,
-      otherEvents: []
+      otherEvents: [],
     };
   }
 
   // Helpers
   removeDaysFromArray = (dayArray, days2remove) => {
     return dayArray.filter(day => {
-      const foundIdx = days2remove.findIndex(removeDay =>
-        DateUtils.isSameDay(removeDay, day)
-      );
+      const foundIdx = days2remove.findIndex(removeDay => DateUtils.isSameDay(removeDay, day));
       return foundIdx === -1;
     });
+  };
+
+  handleMonthChange = newmonth => {
+    this.fetchPassesFromServer(newmonth);
+  };
+
+  componentDidUpdate(nextProps, prevState) {
+    if (prevState.settings.calendarId !== this.state.settings.calendarId) {
+      this.fetchPassesFromServer();
+    }
   }
+
+  componentWillMount() {
+    const locale = window.navigator.userLanguage || window.navigator.language;
+    console.log('pelle:', locale);
+    this.setState({ settings: this.props.easySchedulerModel.getSettings() }, () => this.fetchPassesFromServer());
+  }
+
+  fetchPassesFromServer = monthToFetch => {
+    this.setState({ loading: true });
+    if (!monthToFetch) {
+      monthToFetch = this.state.currentMonth;
+    }
+
+    if (monthToFetch.getMonth() !== this.state.currentMonth.getMonth()) {
+      this.setState({ currentMonth: monthToFetch });
+    }
+
+    getEventsForMonth(this.props.gapi, this.state.settings.calendarId, monthToFetch).then(events => {
+      const daypasses = events
+        .filter(event => moment(event.start.dateTime).hour() < 8)
+        .map(event => moment(event.start.dateTime).toDate());
+      const eveningpasses = events
+        .filter(event => moment(event.start.dateTime).hour() > 8)
+        .map(event => moment(event.start.dateTime).toDate());
+      this.setState({
+        loading: false,
+        events,
+        daypasses,
+        eveningpasses,
+        selectedDays: [],
+      });
+    });
+
+    getOtherEventsForMonth(this.props.gapi, this.state.settings.calendarId, monthToFetch).then(events =>
+      this.setState({ otherEvents: events })
+    );
+  };
 
   // DayPicker functions
   handleDayClick = (day, { selected }) => {
-
     const { addPassMode, selectedDays } = this.state;
     if (!addPassMode) {
       this.setState({ selectedDays: [], selectedDay: day });
@@ -105,47 +102,36 @@ class DatePicker extends Component {
     }
 
     if (selected) {
-      const selectedIndex = selectedDays.findIndex(selectedDay =>
-        DateUtils.isSameDay(selectedDay, day)
-      );
+      const selectedIndex = selectedDays.findIndex(selectedDay => DateUtils.isSameDay(selectedDay, day));
       selectedDays.splice(selectedIndex, 1);
     } else {
       selectedDays.push(day);
     }
     this.setState({ selectedDays, selectedDay: day });
-  }
+  };
 
   // ============================
   // Biz logic methods
 
-  addPasses = (dayPass) => () => {
-    this.setState({loading: true});
+  addPasses = dayPass => () => {
+    this.setState({ loading: true });
 
     // filter out already inserted days
-    const passesToAdd = this.removeDaysFromArray(this.state.selectedDays,
-      dayPass ? this.state.daypasses : this.state.eveningpasses);
+    const passesToAdd = this.removeDaysFromArray(
+      this.state.selectedDays,
+      dayPass ? this.state.daypasses : this.state.eveningpasses
+    );
 
     insertPasses(this.props.gapi, this.state.settings.calendarId, dayPass, passesToAdd, this.state.settings)
       .then(res => this.fetchPassesFromServer())
       .catch(e => {
-        this.setState(
-          { alertDialogShown: true },
-          () => setTimeout(this.fetchPassesFromServer, 500)
-        );
+        this.setState({ alertDialogShown: true }, () => setTimeout(this.fetchPassesFromServer, 500));
       });
-
-    // if (dayPass) {
-    //   const daypasses = [...this.state.daypasses, ...this.state.selectedDays];
-    //   this.setState({ daypasses, selectedDays: [] });
-    // } else {
-    //   const eveningpasses = [...this.state.eveningpasses, ...this.state.selectedDays];
-    //   this.setState({ eveningpasses, selectedDays: [] });
-    // }
-  }
+  };
 
   clearDays = () => {
     const { events, selectedDays } = this.state;
-    this.setState({loading: true});
+    this.setState({ loading: true });
 
     const eventIdsToDelete = [];
     events.forEach(event => {
@@ -161,71 +147,20 @@ class DatePicker extends Component {
       .then(res => this.fetchPassesFromServer())
       .catch(e => {
         console.log(e);
-        this.setState(
-          { alertDialogShown: true },
-          () => setTimeout(this.fetchPassesFromServer, 500)
-        );
+        this.setState({ alertDialogShown: true }, () => setTimeout(this.fetchPassesFromServer, 500));
       });
-
-    // const daypasses = this.removeDaysFromArray(this.state.daypasses, selectedDays);
-    // const eveningpasses = this.removeDaysFromArray(this.state.eveningpasses, selectedDays);
-    //
-    // this.setState({ daypasses, eveningpasses, selectedDays: [] });
-
-  }
-
-  handleMonthChange = (newmonth) => {
-    this.fetchPassesFromServer(newmonth);
-  }
-
-  componentDidUpdate(nextProps, prevState) {
-    if(prevState.settings.calendarId !== this.state.settings.calendarId) {
-      this.fetchPassesFromServer();
-    }
-  }
-
-  componentWillMount() {
-
-    this.setState(
-      { settings: this.props.easySchedulerModel.getSettings() },
-      () => this.fetchPassesFromServer()
-    );
-  }
-
-  fetchPassesFromServer = (monthToFetch) => {
-    this.setState({loading: true});
-    if (!monthToFetch) {
-      monthToFetch = this.state.currentMonth;
-    }
-
-    if (monthToFetch.getMonth() !==  this.state.currentMonth.getMonth()) {
-      this.setState({ currentMonth: monthToFetch });
-    }
-
-    getEventsForMonth(this.props.gapi, this.state.settings.calendarId, monthToFetch)
-      .then(events => {
-        const daypasses = events
-          .filter(event => moment(event.start.dateTime).hour() < 8)
-          .map(event => moment(event.start.dateTime).toDate());
-        const eveningpasses = events
-          .filter(event => moment(event.start.dateTime).hour() > 8)
-          .map(event => moment(event.start.dateTime).toDate());
-        this.setState({ loading: false, events, daypasses, eveningpasses, selectedDays: [] });
-      });
-
-    getOtherEventsForMonth(this.props.gapi, this.state.settings.calendarId, monthToFetch)
-      .then(events => this.setState({ otherEvents: events }));
-  }
+  };
 
   render() {
-    const { loading,
-            currentMonth,
-            daypasses,
-            eveningpasses,
-            selectedDays,
-            otherEvents,
-            addPassMode,
-            selectedDay
+    const {
+      loading,
+      currentMonth,
+      daypasses,
+      eveningpasses,
+      selectedDays,
+      otherEvents,
+      addPassMode,
+      selectedDay,
     } = this.state;
 
     const selectedDaysEvents = otherEvents
@@ -233,17 +168,18 @@ class DatePicker extends Component {
       .map(event => {
         const start = moment(event.start.dateTime).format('HH:mm');
         const end = moment(event.end.dateTime).format('HH:mm');
-        return start + ' - ' + end + '  ' +  event.summary;
+        return start + ' - ' + end + '  ' + event.summary;
       });
+    //    console.log('Here:', selectedDaysEvents);
 
     return (
       <Fragment>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
-        }}>
-
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}>
           {loading && <ProgressBar style={{ width: '100%' }} indeterminate />}
 
           <DayPicker
@@ -255,42 +191,72 @@ class DatePicker extends Component {
             onDayClick={this.handleDayClick}
             onMonthChange={this.handleMonthChange}
             selectedDays={selectedDays}
-            modifiers={ {daypasses, eveningpasses} }
+            modifiers={{ daypasses, eveningpasses }}
           />
           <div>
-            <DatePickerStyles daypassColor={this.state.settings.daypass.color} eveningpassColor={this.state.settings.eveningpass.color}/>
+            <DatePickerStyles
+              daypassColor={this.state.settings.daypass.color}
+              eveningpassColor={this.state.settings.eveningpass.color}
+            />
             {addPassMode && (
               <Fragment>
                 <div>
-                  <button className="passButton daypassesButton" disabled={!selectedDays.length} onClick={this.addPasses(true)}>Dagpass</button>
-                  <button className="passButton eveningpassesButton"  disabled={!selectedDays.length} onClick={this.addPasses(false)}>Kvällspass</button>
-                  <button className="passButton removepassesButton" disabled={!selectedDays.length} onClick={this.clearDays}>Rensa</button>
+                  <button
+                    className="passButton daypassesButton"
+                    disabled={!selectedDays.length}
+                    onClick={this.addPasses(true)}>
+                    Dagpass
+                  </button>
+                  <button
+                    className="passButton eveningpassesButton"
+                    disabled={!selectedDays.length}
+                    onClick={this.addPasses(false)}>
+                    Kvällspass
+                  </button>
+                  <button
+                    className="passButton removepassesButton"
+                    disabled={!selectedDays.length}
+                    onClick={this.clearDays}>
+                    Rensa
+                  </button>
                 </div>
               </Fragment>
-              )}
+            )}
+
             {!addPassMode && (
               <Fragment>
-                <div style={{ marginTop: '15px', width: '80vw', height: '27vh', overflow: 'scroll' }}>
+                <div
+                  style={{
+                    width: '80vw',
+                    height: '27vh',
+                    overflow: 'scroll',
+                  }}>
                   <List
                     dataSource={selectedDaysEvents}
                     renderRow={(row, index) => {
-                      return (<ListItem key={index}>{row}</ListItem>);
+                      return (
+                        <div key={index} className="ons-list-item-fixed">
+                          {row}
+                        </div>
+                      );
                     }}
-                    renderHeader={() => <ListHeader modifier="material">DDDD</ListHeader>}
+                    renderHeader={() => (
+                      <ListHeader modifier="material">{moment(selectedDay).format('dddd D MMMM')}</ListHeader>
+                    )}
                   />
                 </div>
               </Fragment>
-              )}
+            )}
           </div>
 
           <div className="bottomButtonContainer">
-              <button className="passButton addPassesButton"
-                      onClick={() => this.setState({ addPassMode: !addPassMode, selectedDays: [] })}>
-                {addPassMode ? 'Klar' : 'Lägg till pass' }
-                </button>
+            <button
+              className="passButton addPassesButton"
+              onClick={() => this.setState({ addPassMode: !addPassMode, selectedDays: [] })}>
+              {addPassMode ? 'Klar' : 'Lägg till pass'}
+            </button>
           </div>
         </div>
-
 
         <AlertDialog isOpen={this.state.alertDialogShown} isCancelable={false}>
           <div className="alert-dialog-title">Warning!</div>
@@ -299,17 +265,19 @@ class DatePicker extends Component {
             Prova en gång till.
           </div>
           <div className="alert-dialog-footer">
-            <Button onClick={() => { this.fetchPassesFromServer(); this.setState({alertDialogShown: false}) }} className="alert-dialog-button">
+            <Button
+              onClick={() => {
+                this.fetchPassesFromServer();
+                this.setState({ alertDialogShown: false });
+              }}
+              className="alert-dialog-button">
               Ok
             </Button>
           </div>
         </AlertDialog>
-
-
       </Fragment>
     );
   }
 }
 
 export default withGoogleApi(DatePicker);
-
